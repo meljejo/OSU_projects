@@ -54,7 +54,7 @@ class KubaGame:
     def get_marble(self, coordinates):
         row, col = coordinates
 
-        if not self._are_valid_coordinates(coordinates):
+        if self._are_valid_coordinates(coordinates):
             return self._board[row][col]
         raise IndexError(f"Invalid board coordinates ({row}, {col})")
 
@@ -193,10 +193,23 @@ class KubaGame:
         Counts the numbers of white, black, and red marbles remaining on the board.
         :return: Returns number of marbles in a tuple (W, B, R) which is White, Black, Red
         """
-        white_marbles = sum(element == 'W' for element in self._count_marbles(self._board))
-        black_marbles = sum(element == 'B' for element in self._count_marbles(self._board))
-        red_marbles = sum(element == 'R' for element in self._count_marbles(self._board))
+        white_marbles = 0
+        black_marbles = 0
+        red_marbles = 0
+
+        for row in range(7):
+            for col in range(7):
+                cell_color = self._board[row][col]
+                if cell_color == 'R':
+                    red_marbles += 1
+                elif cell_color == 'B':
+                    black_marbles += 1
+                elif cell_color == 'W':
+                    white_marbles += 1
+
         return white_marbles, black_marbles, red_marbles
+
+
 
     def _count_marbles(self, board):
         for sublist in board:
