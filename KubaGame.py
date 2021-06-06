@@ -12,13 +12,20 @@ class KubaGame:
 
     def __init__(self, player_a, player_b):
         """
-        Constructor for KubaGame. Initializes game board.
-        :param player_a: takes tuple as parameter: (player, players_marble_color)
-        :param player_b: (player, players_marble_color)
+        Builds a KubaGame.
 
-        The current_turn is None at the start of the game.
-        The game_state is set to None (and will change when there is a win)
-        The board is initialized by hardcoding the gameboard to it's starting state.
+        The game is in an 'unstarted' state, meaning that either player can conduct
+        the next move and from there on, the game will alternate turns between two players.
+
+        The class refers to the players as "player_a" and "player_b." This naming is only to
+        differentiate between the two players and does not have any implications as to which
+        player comes first.
+
+        :param player_a: tuple containing the data for player_a. The first element is the player's name
+            and the second element is the player's color.
+        :param player_b: tuple containing the data for player_b. The first element is the player's name
+            and the second element is the player's color.
+
         """
         self._player_a = (player_a[0], player_a[1])
         self._player_b = (player_b[0], player_b[1])
@@ -37,10 +44,16 @@ class KubaGame:
 
         self._previous_board = self._board
 
+        # Internally we keep two boards: one that represents the current state
+        # of the game and the one that represents the state of the game in
+        # the previous turn. This allows us to prevent movements that would
+        # return the board to the same state as in the previous turn, which
+        # effectively implements the Ko Rule.
+
     def get_current_turn(self):
         """
         Returns the player's name whose turn it is to play the game.
-        It should return None if the game hasn't started.
+        Can be None if the game has just been initialized.
         """
         if self._current_turn is None:
             return None
@@ -52,6 +65,13 @@ class KubaGame:
             return self._player_b[0]
 
     def get_marble(self, coordinates):
+        """
+        Returns the marble at a specific position on the board.
+        :param coordinates: the (row, col) coordinates of the position
+            to return
+        :return: the marble present at "coordinates" on the board.
+        :raises : IndexError: if invalid coordinates are given.
+        """
         row, col = coordinates
 
         if self._are_valid_coordinates(coordinates):
@@ -60,23 +80,33 @@ class KubaGame:
 
     def _validate_player_name_exists(self, player_name):
         """
-        Method to validate if the player's name exists.
-        If the name does not exist, the method will return False.
+        Checks if a provided string is a valid name for a player.
+        :param player_name: the name to check
+        :return: True if 'name' is a valid player name, False otherwise.
         """
         if player_name != self._player_a[0] or self._player_b[0]:
             return False
 
     def _are_valid_coordinates(self, coordinates):
-        """ Checks that the given coordinates are on the game board. """
+        """
+        Checks that the given coordinates are on the game board.
+        :param coordinates: the (row, col) coordinates to check
+        :returns: True if 'coordinates' are within the boundaries
+            of the board, False otherwise.
+        """
         row, col = coordinates
         return 0 <= row <= 6 and 0 <= col <= 6
 
     def make_move(self, player_name, coordinates, direction):
         """
-        Makes a move in Kuba (once several checks pass).
+        Attempts to perform a move by a player and modifies the state of
+        the game accordingly.
+
         :param player_name: player making move
-        :param coordinates: coordinates as tuple (row, column) of marble that is going to be pushed
-        :param direction: L (left), R (right), F (forward), B (backward)
+        :param coordinates: coordinates as tuple (row, column) of marble
+            that is going to be pushed
+        :param direction: L (left), R (right), F (forward), B (backward). This is
+            the direction that the marbles will be pushed towards.
         :return: True if move is successful, returns False if move is invalid
         """
 
@@ -91,7 +121,7 @@ class KubaGame:
             if player_name == self._player_b[0]:
                 self._current_turn = self._player_b
 
-        # If move is being made after the game has been won return False
+        # If there is already a winner, no moves are allowed.
         if self.get_winner():
             return False
 
@@ -127,13 +157,12 @@ class KubaGame:
             # Ko rule has been triggered
             return False
 
-        self._previous_board = self._board
-        self._board = board_copy
-
         #### Below this line, we know the move is valid ####
 
-        # Move is valid, so update self._board (instead of the copy)
-        self._shift_board_for_move(self._board, coordinates, direction)
+        # We know the move is valid, so we can call it complete and update
+        # the boards.
+        self._previous_board = self._board
+        self._board = board_copy
 
         # Update marble count
         if pushed_off is not None and pushed_off == 'R':
@@ -212,12 +241,6 @@ class KubaGame:
         return white_marbles, black_marbles, red_marbles
 
 
-
-    def _count_marbles(self, board):
-        for sublist in board:
-            for element in sublist:
-                yield element
-
     def _is_there_empty_space_for_move(self, coordinates, direction):
         # Checks if there's "empty" space to perform a move starting
         # at coordinates "coordinates", in the specified direction. In order
@@ -257,11 +280,18 @@ class KubaGame:
         return True
 
     def _shift_board_for_move(self, board, coordinates, direction):
-        # Shifts the cells of "board" from the specified "coordinates"
-        # in the specified "direction".
-        #
-        # This method also returns the contents of the cell that has
-        # been pushed off.
+        """
+        This method performs the actual shifting of marbles that happen
+        when a move is performed.
+
+        This method does not make any checks to make sure the move is valid.
+        Its only role is to shift cells of the passed in board in the
+        specified direction.
+
+        Shifting the board might result in a marble falling off the board,
+        so this method returns the content of the marble that went
+        off the board (if there is one). Otherwise, it returns None.
+        """
         row, col = coordinates
         pushed_off = None
 
@@ -274,7 +304,6 @@ class KubaGame:
                 board[row][col] = overwrite
                 col -= 1
                 to_move, overwrite = board[row][col], to_move
-                # check if you're at the edge of the board, if so, store the pushed off marble
                 if overwrite == 'X':
                     break
 
@@ -283,7 +312,6 @@ class KubaGame:
             overwrite = 'X'
             while col <= 6:
                 board[row][col] = overwrite
-                # Check if you're at the edge of the board, and if so, assign pushed_off
                 if col == 6:
                     pushed_off = to_move
                     break
@@ -293,8 +321,6 @@ class KubaGame:
                     break
 
         if direction == 'F':
-            # The value to be moved is stored as to_move with the current coordinates.
-            # Each value is sequentially moved until an 'X' is reached
             to_move = board[row][col]
             overwrite = 'X'
             while row >= 0:
@@ -303,7 +329,6 @@ class KubaGame:
                 board[row][col] = overwrite
                 row -= 1
                 to_move, overwrite = board[row][col], to_move
-                # check if you're at the edge of the board, if so, store the pushed off marble
                 if overwrite == 'X':
                     break
 
@@ -312,7 +337,6 @@ class KubaGame:
             overwrite = 'X'
             while row <= 6:
                 board[row][col] = overwrite
-                # check if you're at the edge of the board, if so, store the pushed off marble
                 if row == 6:
                     pushed_off = to_move
                     break
