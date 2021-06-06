@@ -139,8 +139,10 @@ class KubaGame:
         if pushed_off is not None and pushed_off == 'R':
             if player_name == self._player_a[0]:
                 self._player_a_red += 1
+                return True
             if player_name == self._player_b[0]:
                 self._player_b_red += 1
+                return True
 
         # Move was valid, so now update current_turn
         if player_name == self._player_a[0]:
