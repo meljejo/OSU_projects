@@ -169,6 +169,8 @@ class KubaGame:
             self._winner = self._player_a[0]
             return True
 
+        return True
+
     def get_winner(self):
         """
         This method returns the name of the winning player.
