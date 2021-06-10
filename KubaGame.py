@@ -197,6 +197,7 @@ class KubaGame:
             self._winner = self._player_a[0]
             return True
 
+        # If the move was valid but the game did not end, return True
         return True
 
     def get_winner(self):
@@ -344,5 +345,36 @@ class KubaGame:
         return pushed_off
 
 
+    def print_game(self):
+        print("\n")
+        for i in range(len(self._board)):
+            grid = ""
+            for j in range(len(self._board[i])):
+                grid += str(self._board[i][j]) + "  "
+            print(grid)
 
 
+
+game = KubaGame(("Melissa", "W"), ("Mora", "B"))
+#game.print_game()
+
+game.make_move('Melissa', (6, 6), 'L')
+game.make_move('Mora', (6, 0), "F")
+game.print_game()
+
+game.make_move('Melissa', (6, 5), 'L')
+game.make_move('Mora', (5, 0), "F")
+game.print_game()
+
+
+game.make_move('Melissa', (6, 3), 'F')
+game.make_move('Mora', (4, 0), "F")
+print(game.get_current_turn())
+game.print_game()
+
+game.make_move('Melissa', (5, 3), 'F')
+print(game.get_captured('Melissa'))
+print(game.get_current_turn())
+game.make_move('Mora', (3, 0), "F")
+game.print_game()
+print(game.get_marble_count())
