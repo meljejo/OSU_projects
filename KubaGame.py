@@ -1,5 +1,5 @@
 # Melissa J Johnson
-# 06/02/2021
+# 06/09/2021
 # CS 162 Final Project
 
 # Write a class named KubaGame for playing a board game called Kuba.
@@ -168,10 +168,9 @@ class KubaGame:
         if pushed_off is not None and pushed_off == 'R':
             if player_name == self._player_a[0]:
                 self._player_a_red += 1
-                return True
             if player_name == self._player_b[0]:
                 self._player_b_red += 1
-                return True
+
 
         # Move was valid, so now update current_turn
         if player_name == self._player_a[0]:
@@ -207,7 +206,6 @@ class KubaGame:
         """
         return self._winner
 
-
     def get_captured(self, player_name):
         """
          Method that takes the player's name as a parameter
@@ -217,7 +215,6 @@ class KubaGame:
             return self._player_a_red
         if player_name == self._player_b[0]:
             return self._player_b_red
-
 
     def get_marble_count(self):
         """
@@ -239,7 +236,6 @@ class KubaGame:
                     white_marbles += 1
 
         return white_marbles, black_marbles, red_marbles
-
 
     def _is_there_empty_space_for_move(self, coordinates, direction):
         # Checks if there's "empty" space to perform a move starting
@@ -347,12 +343,6 @@ class KubaGame:
 
         return pushed_off
 
-    def print_game(self):
-        print("\n")
-        for i in range(len(self._board)):
-            grid = ""
-            for j in range(len(self._board[i])):
-                grid += str(self._board[i][j]) + "  "
-            print(grid)
+
 
 
